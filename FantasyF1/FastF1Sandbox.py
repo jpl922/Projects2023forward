@@ -109,3 +109,55 @@ normlegend = mpl.colors.Normalize(vmin=color.min(), vmax=color.max())
 legend = mpl.colorbar.ColorbarBase(cbaxes,norm=normlegend, cmap=colormap, orientation="horizontal")
 plt.show()
 
+
+
+#%% plotting position change of each driver over a race 
+
+fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+
+session = fastf1.get_session(2023,'Silverstone','R')
+session.load(telemetry=False, weather=False)
+
+fig, ax = plt.subplots(figsize=(8.0,4.9))
+
+# 3 letter abbreviation for each driver
+
+for drv in session.drivers: # can do for loops through the list nice 
+    drv_laps = session.laps.pick_driver(drv)
+    
+    abb = drv_laps['Driver'].iloc[0] # just indexing 
+    color = fastf1.plotting.driver_color(abb)
+    ax.plot(drv_laps['LapNumber'], drv_laps['Position'], label=abb, color=color)
+    
+    
+ax.set_ylim([20.5,0.5])
+ax.set_yticks([1,5,10,15,20])
+ax.set_xlabel('Lap')
+ax.set_ylabel('Position')
+
+
+ax.legend(bbox_to_anchor=(1.0,1.02))
+plt.tight_layout()
+
+plt.show()
+    
+
+# Fantasy data manipulation exploration 
+abblist = []
+laplist = []
+poslist = []
+for drv in session.drivers: # can do for loops through the list nice 
+    drv_laps = session.laps.pick_driver(drv)
+    
+    abb = drv_laps['Driver'].iloc[0] # just indexing 
+    abblist.append(abb)
+    
+    lapnum = drv_laps['LapNumber']
+    laplist.append(lapnum)
+    pos = drv_laps['Position']
+    poslist.append(pos) # first two work this one needs work second for looop maybe 
+    
+    
+    
+    
+drv_laps=session.laps.pick_driver(abblist[1])
