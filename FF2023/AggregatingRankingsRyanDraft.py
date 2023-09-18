@@ -7,12 +7,13 @@ Compiling rankings just want to extract and store rankings with the player
 
 import pandas as pd
 
-df = pd.read_excel(r'C:\Users\17jlo\Desktop\Ryan_8_27_draft prep.xlsx', sheet_name='compiled')
+#df = pd.read_excel(r'C:\Users\17jlo\Desktop\Ryan_8_27_draft prep.xlsx', sheet_name='compiled')
+df = pd.read_excel(r'C:\Users\17jlo\Desktop\HalfPPRPrep.xlsx', sheet_name='compiled')
 print(df)
 
 
 dfFP = df[['FP Player', 'FP Rank']]
-dfBoone = df[['Boone Player','Boone Rank']]
+dfBoone = df[['Boone Player','Boone Rank','Boone Position']]
 dfDS = df[['DS Player','DS Rank']]
 dfWaz = df[['Waz Player','Waz Rank']]
 # Rename the column
