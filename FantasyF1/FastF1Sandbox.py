@@ -21,7 +21,7 @@ schedule = fastf1.get_event_schedule(2023)
 
 
 # Driver results need this session for scoring
-session = fastf1.get_session(2023,'Spielberg','Q')
+session = fastf1.get_session(2023,'Qatar','Q')
 session.load()
 results = session.results # qualifying results 2023 miami gp
 
