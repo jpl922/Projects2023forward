@@ -8,3 +8,5 @@ FantasyF1/.spyproject/config/defaults/
 *.csv
 
 *.zip
+
+*.db
