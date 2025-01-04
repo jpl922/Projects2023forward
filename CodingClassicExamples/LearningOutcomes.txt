@@ -1,0 +1,7 @@
+Hopes for learning:
+
+1. Game design
+2. PG zero
+3. OOP programming
+4. Functions in python 
+5. General python syntax etc... 
