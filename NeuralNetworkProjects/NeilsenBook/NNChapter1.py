@@ -21,7 +21,7 @@ import numpy as np
 
 # Network structure inputs (2), L1 (1) L2(2), L3(3)
 # parameters: Weights = -2; Bias = 3
-
+# Result: this resultant network is a half adder rather than a full adder
 
 
 # function for a perceptron 
@@ -55,4 +55,13 @@ for i1 in [0,1]:
         s,c = addernetwork(input1, input2)
         print(f"{input1} {input2}|  {s}    {c}")
         
-# Stopping here, but this does work needed some chatgpt to quickly print the debugging; truth table matches, but don't have the carry bit so only mimics? behavior/half the table    
+# Stopping here, but this does work needed some chatgpt to quickly print the debugging; truth table matches, but don't have the carry bit so only mimics? behavior/half the table 
+# I believe this is only a half adder; which when combined with another half adder can create a full adder, but books is not accurate I would say then. 
+
+
+
+
+
+#%% Sigmoid 
+
+   
