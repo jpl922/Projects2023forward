@@ -10,3 +10,5 @@ FantasyF1/.spyproject/config/defaults/
 *.zip
 
 *.db
+
+*xlsx
