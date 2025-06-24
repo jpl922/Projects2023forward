@@ -5,7 +5,7 @@ Created on Mon Jun 23 23:30:28 2025
 @author: 17jlo
 """
 
-
+#https://records.nhl.com/draft/draft-picks?year=2024
 
 
 import requests
@@ -49,6 +49,41 @@ for line in lines:
     print(line)
 
 
+
+from selenium import webdriver
+
+
+
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+import time
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+
+
+
+driver.get("https://www.quanthockey.com/")
+time.sleep(5)
+search = driver.find_element(by=By.NAME,value="q")
+search.send_keys("Matvei Michkov")
+time.sleep(5)
+search.send_keys(Keys.ENTER)
+wait = WebDriverWait(driver, 5)
+search_button = wait.until(EC.presence_of_element_located((By.ID, "magnifier")))
+
+# Click the button
+search_button.click()
+
+url2 = driver.current_url
+time.sleep(3)
+driver.quit()
 
 
 
