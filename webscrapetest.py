@@ -6,6 +6,7 @@ Created on Mon Jun 23 23:30:28 2025
 """
 
 #https://records.nhl.com/draft/draft-picks?year=2024
+#https://records.nhl.com/draft/draft-picks?round=1&year=2000
 
 
 import requests
