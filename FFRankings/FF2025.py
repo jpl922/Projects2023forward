@@ -97,14 +97,14 @@ FPros = 'https://www.fantasypros.com/nfl/rankings/ppr-cheatsheets.php'
 #2. find datawrapper
 #3. add data.csv to end of link 
 BooneWrapper = 'https://datawrapper.dwcdn.net/Of2id/5/data.csv'
-BooneData = pd.read_csv(BooneWrapper)
+BooneData = pd.read_csv(BooneWrapper, index_col=False)
 
 
 
 #%% Ciely/Fpros (download buttons)
 # Just download the files? (very easy)
-CielyData = pd.read_csv(r"C:\Users\Jason\Desktop\Hobby\Programming\Projects2023forward\FFRankings\2025_Data\Ciely20258_19.csv") # need to clean file (remove top label)
-FProsData = pd.read_csv(r"C:\Users\Jason\Desktop\Hobby\Programming\Projects2023forward\FFRankings\2025_Data\FPros20258_19.csv")
+CielyData = pd.read_csv(r"C:\Users\Jason\Desktop\Hobby\Programming\Projects2023forward\FFRankings\2025_Data\Ciely20258_19.csv", index_col=False) # need to clean file (remove top label)
+FProsData = pd.read_csv(r"C:\Users\Jason\Desktop\Hobby\Programming\Projects2023forward\FFRankings\2025_Data\FPros20258_19.csv", index_col=False)
 
 
 
@@ -113,7 +113,7 @@ DraftSharks = 'https://www.draftsharks.com/rankings/ppr'
 driver.get(DraftSharks)
 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-time.sleep(5)
+time.sleep(2)
 DShtml = driver.page_source
 time.sleep(2)
 driver.quit()
@@ -146,3 +146,32 @@ DSdata['Pos'] = Position_Ranks
 #POS to remove LB; DL, DB
 
 DSDataClean = DSdata[~DSdata.Pos.str.contains("LB|DL|DB")] # think this works maybe for wrong reason, but IDK 
+DSDataClean = DSDataClean[DSDataClean.index <=309]
+DSDataClean["RK"] = pd.to_numeric(DSDataClean["RK"], errors="coerce")
+#%% Renaming columns 
+BooneData = BooneData.rename(columns={'Rank':'Boone Rank'})
+FProsData = FProsData.rename(columns={'RK':'FPros Rank','PLAYER NAME':'Player','TIERS':'FPros Tiers'})
+CielyData = CielyData.rename(columns={'Player Name':'Player','Rank':'Ciely Rank'})
+DSdf = DSDataClean.rename(columns={'RK':'DS Rank','ADP':'DS ADP'})
+
+DSdf["Player"] = DSdf["Player"].replace({"Aaron Jones":"Aaron Jones Sr.",
+"Cameron Skattebo":"Cam Skattebo",
+"Cameron Ward":"Cam Ward",
+"Chigoziem Okonkwo":"Chig Okonkwo",
+"Chris Rodriguez": "Chris Rodriguez Jr.",
+"D.J. Moore": "DJ Moore",
+"D.K. Metcalf":"DK Metcalf",
+"Deebo Samuel": "Deebo Samuel Sr.",
+"Kyle Pitts":"Kyle Pitts Sr.",
+"Patrick Mahomes":"Patrick Mahomes II",
+"Travis Etienne":"Travis Etienne Jr.",
+"Tre Harris":"Tre' Harris"})
+
+
+CompiledDF = FProsData.merge(BooneData, on = "Player", how="outer").merge(CielyData, on = "Player", how="outer").merge(DSdf, on="Player", how="outer")
+
+FFRanks = CompiledDF[["Player","POS","TEAM","Boone Rank", "Ciely Rank","DS Rank", "FPros Rank","BYE WEEK","SOS","Injury Risk","DS ADP", "FPros Tiers"]]
+
+FFRanks['Avg Rank'] = FFRanks[['DS Rank', 'Boone Rank', 'Ciely Rank']].mean(axis=1)
+
+FFRanks.to_excel('2025FFRankings.xlsx',index=False)
