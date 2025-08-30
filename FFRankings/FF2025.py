@@ -96,15 +96,15 @@ FPros = 'https://www.fantasypros.com/nfl/rankings/ppr-cheatsheets.php'
 #1. inspect page
 #2. find datawrapper
 #3. add data.csv to end of link 
-BooneWrapper = 'https://datawrapper.dwcdn.net/Of2id/5/data.csv'
+BooneWrapper = 'https://datawrapper.dwcdn.net/Of2id/8/data.csv'
 BooneData = pd.read_csv(BooneWrapper, index_col=False)
 
 
 
 #%% Ciely/Fpros (download buttons)
 # Just download the files? (very easy)
-CielyData = pd.read_csv(r"C:\Users\Jason\Desktop\Hobby\Programming\Projects2023forward\FFRankings\2025_Data\Ciely20258_19.csv", index_col=False) # need to clean file (remove top label)
-FProsData = pd.read_csv(r"C:\Users\Jason\Desktop\Hobby\Programming\Projects2023forward\FFRankings\2025_Data\FPros20258_19.csv", index_col=False)
+CielyData = pd.read_csv(r"C:\Users\Jason\Desktop\Hobby\Programming\Projects2023forward\FFRankings\2025_Data\Ciely20258_25.csv", index_col=False) # need to clean file (remove top label)
+FProsData = pd.read_csv(r"C:\Users\Jason\Desktop\Hobby\Programming\Projects2023forward\FFRankings\2025_Data\FPros20258_25.csv", index_col=False)
 
 
 
@@ -170,7 +170,7 @@ DSdf["Player"] = DSdf["Player"].replace({"Aaron Jones":"Aaron Jones Sr.",
 
 CompiledDF = FProsData.merge(BooneData, on = "Player", how="outer").merge(CielyData, on = "Player", how="outer").merge(DSdf, on="Player", how="outer")
 
-FFRanks = CompiledDF[["Player","POS","TEAM","Boone Rank", "Ciely Rank","DS Rank", "FPros Rank","BYE WEEK","SOS","Injury Risk","DS ADP", "FPros Tiers"]]
+FFRanks = CompiledDF[["Player","POS","TEAM","Boone Rank", "Ciely Rank","DS Rank", "FPros Rank","BYE","SOS_x","Injury Risk","DS ADP", "FPros Tiers"]]
 
 FFRanks['Avg Rank'] = FFRanks[['DS Rank', 'Boone Rank', 'Ciely Rank']].mean(axis=1)
 
