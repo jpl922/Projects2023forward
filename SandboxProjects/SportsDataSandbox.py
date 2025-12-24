@@ -31,6 +31,8 @@ print(f"Defensemen: {len(roster['defensemen'])}")
 print(f"Goalies: {len(roster['goalies'])}")
 
 #Michkov 8484387
+Michkov = client.edge.skater_detail(player_id='8478387',season='20252026')
+MichkovShot = client.edge.skater_shot_location_detail(player_id='8478387',season='20252026')
 
 #%% NBA
 from nba_api.stats.static import players
