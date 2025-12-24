@@ -1,1 +1,0 @@
-![[Pasted image 20251223172338.png]]https://matplotlib.org/cheatsheets/

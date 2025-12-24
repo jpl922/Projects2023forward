@@ -63,12 +63,38 @@ ax.scatter(CurryData['SEASON_ID'],CurryData['FG3_PCT']*100,s=100*CurryData['FG3M
 plt.show()
 
 
+# Shot charts
+from nba_api.stats.endpoints import shotchartdetail
+# team_id = 0 removes team id requirement 
+MaxeyShotData25 = shotchartdetail.ShotChartDetail(team_id=0, player_id=1630178,context_measure_simple='FGA',season_nullable="2025-26",season_type_all_star=['Regular Season']).get_data_frames()[0]
+MaxeyShotDataRookie =shotchartdetail.ShotChartDetail(team_id=0, player_id=1630178,context_measure_simple='FGA',season_nullable="2020-21",season_type_all_star=['Regular Season']).get_data_frames()[0]
+fig,ax =plt.subplots()
+ax.scatter(MaxeyShotDataRookie["LOC_X"].to_numpy(),(MaxeyShotDataRookie["LOC_Y"]).to_numpy())
+ax.set_title('Maxey rookie')
+fig,ax =plt.subplots()
+ax.scatter(MaxeyShotData25["LOC_X"].to_numpy(),(MaxeyShotData25["LOC_Y"]).to_numpy())
+ax.set_title('2025-2026')
 
+# why plus 60 for half court?? purely a plotting thing?  
+#https://algorithmicathlete.com/blog/is-mid-range-dead
 
+CurryShotData25 = shotchartdetail.ShotChartDetail(team_id=0, player_id=201939,context_measure_simple='FGA',season_nullable="2025-26",season_type_all_star=['Regular Season']).get_data_frames()[0]
+CurryShotDataRookie =shotchartdetail.ShotChartDetail(team_id=0, player_id=201939,context_measure_simple='FGA',season_nullable="2009-10",season_type_all_star=['Regular Season']).get_data_frames()[0]
+fig,ax =plt.subplots()
+ax.scatter(CurryShotDataRookie["LOC_X"].to_numpy(),(CurryShotDataRookie["LOC_Y"]).to_numpy())
+ax.set_title('Curry Rookie')
+fig,ax =plt.subplots()
+ax.scatter(CurryShotData25["LOC_X"].to_numpy(),(CurryShotData25["LOC_Y"]).to_numpy())
+ax.set_title('Curry 2025-2026')
 
-
-
-
+VJShotData = shotchartdetail.ShotChartDetail(team_id=0, player_id=1642845,context_measure_simple='FGA',season_nullable="2025-26",season_type_all_star=['Regular Season']).get_data_frames()[0]
+fig,ax =plt.subplots()
+ax.scatter(VJShotData["LOC_X"].to_numpy(),(VJShotData["LOC_Y"]).to_numpy())
+ax.set_title('VJ Rookie')
+MccainShotDataRookie = shotchartdetail.ShotChartDetail(team_id=0, player_id=1642272,context_measure_simple='FGA',season_nullable="2024-25",season_type_all_star=['Regular Season']).get_data_frames()[0]
+fig,ax =plt.subplots()
+ax.scatter(MccainShotDataRookie["LOC_X"].to_numpy(),(MccainShotDataRookie["LOC_Y"]).to_numpy())
+ax.set_title('Mccain Rookie')
 
 
 
