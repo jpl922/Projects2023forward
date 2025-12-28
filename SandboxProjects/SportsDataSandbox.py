@@ -4,12 +4,11 @@ Created on Tue Dec 23 16:38:20 2025
 Nba and NHL Apis
 @author: 17jlo
 """
-#%% Import
+#%% General Import
 import numpy as np 
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import seaborn as sns
 from matplotlib.patches import Circle, Rectangle, Arc
 
 #%% NHL
@@ -104,22 +103,11 @@ fig,ax =plt.subplots()
 ax.scatter(MccainShotDataRookie["LOC_X"].to_numpy(),(MccainShotDataRookie["LOC_Y"]).to_numpy())
 ax.set_title('Mccain Rookie')
 
-
-
-from nba_api.stats.static import players
-nba_players = players.get_players()
-big_fundamental1 = [
-    player for player in nba_players if player["full_name"] == "Tim Duncan"
-][0] # the [0] this changes the output from a list with the dictionary to a dict 
-
-
 #Functions 
 # Player ID lookup
 # season selector; for loop with len of seasons; 
 # data storage; shot chart variable 
 # plot generation 
-
-
 # prereqs
 # nba_players
 def nba_player_lookup(fullname: str)->dict:
@@ -215,6 +203,93 @@ def draw_court(ax,lw,color):
 
 # function made/missed / plot 
 
+
+#%% Shot Chart clean
+# general imports
+import numpy as np 
+import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib.patches import Circle, Rectangle, Arc
+
+# API imports
+from nba_api.stats.endpoints import playercareerstats
+from nba_api.stats.endpoints import shotchartdetail
+from nba_api.stats.static import players # needed for player lookup
+nba_players = players.get_players() # needed for player lookup
+from nba_api.stats.static import teams # needed for team lookup
+nba_teams = teams.get_teams() # needed for team lookup 
+
+# Settings and Parameters
+color = 'k' # court line color
+lw=2 # court linewidth
+
+
+
+# Functions 
+def nba_team_lookup(teamname: str)-> dict: 
+ # Returns dictionary containing the Player ID of a player 
+    NBATID = [team for team in nba_teams if team["full_name"] == teamname][0]
+    return NBATID
+#SixerTID = nba_team_lookup("Philadelphia 76ers")['id']
+
+
+def nba_player_lookup(fullname: str)->dict:
+    # Returns dictionary containingt he Team ID of a team 
+   NBAPID = [player for player in nba_players if player["full_name"]==fullname][0]
+   return NBAPID
+
+def draw_court(ax,lw,color):
+    # draws court based on the NBA LOC shot chart details 
+    ax.plot([-220,-220],[0,140],linewidth=lw, color=color) # left corner
+    ax.plot([220,220],[0,140], linewidth=lw, color=color) # right corner
+    ax.add_artist(mpl.patches.Arc((0,140), 440, 315, theta1=0,theta2 = 180, facecolor='none',edgecolor=color,lw=lw)) # 3pt
+    ax.plot([-80, -80], [0,190], linewidth=lw,color=color) #outer key left
+    ax.plot([80,80], [0,190], linewidth=lw,color=color) #outer key right
+    ax.plot([-60,-60], [0,190], linewidth=lw, color=color) # inner lane left
+    ax.plot([60,60], [0,190], linewidth=lw, color=color) # inner lane right
+    ax.plot([-80,80],[190,190],linewidth=lw,color=color) # top of key
+    ax.add_artist(mpl.patches.Circle((0,190), 60, facecolor='none',edgecolor=color, lw =2)) # ft circle
+    ax.add_artist(mpl.patches.Circle((0,60), 15, facecolor='none',edgecolor=color, lw =2)) # hoop
+    ax.plot([-30,30], [40,40], linewidth=lw, color=color) # back board
+    ax.set_xlim(-250,250)
+    ax.set_ylim(0,470) # excludes heaves anyways 
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+
+
+
+
+EmbiidPID = nba_player_lookup("Joel Embiid")['id'] # keep ID only which is all needed
+
+# Determine Player Seasons (Index)
+EmbiidCareer = playercareerstats.PlayerCareerStats(EmbiidPID)
+EmbiidDataframe = EmbiidCareer.season_totals_regular_season.get_data_frame()
+EmbiidSeason = EmbiidDataframe['SEASON_ID'] # index 
+
+# Collect Player Shot Charts
+EmbiidSC = {}
+for Season in EmbiidSeason:
+    data = shotchartdetail.ShotChartDetail(team_id=0, player_id=EmbiidPID,context_measure_simple='FGA',season_nullable=Season,season_type_all_star=['Regular Season']).get_data_frames()[0]
+    df = pd.DataFrame(data)
+    EmbiidSC[Season]= df
+
+Rookie = EmbiidSC[EmbiidSeason[0]]
+
+# Made/Miss
+made_shots = Rookie[Rookie['SHOT_MADE_FLAG']==1]
+missed_shots = Rookie[Rookie['SHOT_MADE_FLAG']==0]
+
+# Shot Plot Note +60 is a coordinate correction for the half court 
+fig,ax = plt.subplots() # programmatically setup chart plotting
+ax.scatter(missed_shots["LOC_X"].to_numpy(),(missed_shots["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3)
+ax.scatter(made_shots["LOC_X"].to_numpy(),(made_shots["LOC_Y"]+60).to_numpy(),facecolor='none',edgecolor='g',marker='o',linewidth=1,alpha=0.5)
+draw_court(ax,lw,color)
+ax.legend(['MIssed','Made'])
+
+
+# event handling to select data for showing evolution 
 
 
 
