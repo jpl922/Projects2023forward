@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.patches import Circle, Rectangle, Arc
 
 #%% NHL
 from nhlpy import NHLClient
@@ -34,9 +36,13 @@ print(f"Goalies: {len(roster['goalies'])}")
 Michkov = client.edge.skater_detail(player_id='8478387',season='20252026')
 MichkovShot = client.edge.skater_shot_location_detail(player_id='8478387',season='20252026')
 
-#%% NBA
+#%% NBA Imports
 from nba_api.stats.static import players
+nba_players = players.get_players()
+from nba_api.stats.static import teams
+nba_teams = teams.get_teams()
 
+#%% NBA Sandbox 
 nba_players = players.get_players()
 print("Number of players fetched: {}".format(len(nba_players)))
 nba_players[:5]
@@ -100,22 +106,114 @@ ax.set_title('Mccain Rookie')
 
 
 
+from nba_api.stats.static import players
+nba_players = players.get_players()
+big_fundamental1 = [
+    player for player in nba_players if player["full_name"] == "Tim Duncan"
+][0] # the [0] this changes the output from a list with the dictionary to a dict 
+
+
+#Functions 
+# Player ID lookup
+# season selector; for loop with len of seasons; 
+# data storage; shot chart variable 
+# plot generation 
+
+
+# prereqs
+# nba_players
+def nba_player_lookup(fullname: str)->dict:
+   NBAPID = [player for player in nba_players if player["full_name"]==fullname][0]
+   return NBAPID
+EmbiidPID = nba_player_lookup("Joel Embiid")['id'] # keep ID only which is all needed
+
+
+# prereqs
+# nba_teams
+def nba_team_lookup(teamname: str)-> dict: 
+    NBATID = [team for team in nba_teams if team["full_name"] == teamname][0]
+    return NBATID
+SixerTID = nba_team_lookup("Philadelphia 76ers")['id']
+# could shot chart be a class; with function of player lookup, data cleaning, plotting 
+
+
+# from nba_api.stats.endpoints import playercareerstats
+EmbiidCareer = playercareerstats.PlayerCareerStats(EmbiidPID)
+EmbiidDataframe = EmbiidCareer.season_totals_regular_season.get_data_frame()
+EmbiidSeason = EmbiidDataframe['SEASON_ID'] # index 
+
+
+from nba_api.stats.endpoints import shotchartdetail
+
+EmbiidSC = {}
+
+for Season in EmbiidSeason:
+    data = shotchartdetail.ShotChartDetail(team_id=0, player_id=EmbiidPID,context_measure_simple='FGA',season_nullable=Season,season_type_all_star=['Regular Season']).get_data_frames()[0]
+    df = pd.DataFrame(data)
+    EmbiidSC[Season]= df
+
+Rookie = EmbiidSC[EmbiidSeason[0]]
+fig, ax = plt.subplots()
+
+ax.set_title(EmbiidSeason[0])
+
+# LOC_X and LOC_Y +/- 220 is +/- 22 feet from the center of the hoop 
+# therefore, in the axis units 1 foot is 10 units
+#https://github.com/bradleyfay/py-Goldsberry/blob/main/docs/Visualizing%20NBA%20Shots%20with%20py-Goldsberry.ipynb
+# Draw court
+
+#bradleyfay
+# death of mid range
+
+# https://official.nba.com/rule-no-1-court-dimensions-equipment/
+
+#def draw_court(ax = None, color = 'gray', lw = 1, outer_lines=False):
+color = 'k'
+lw=2
+fig,ax = plt.subplots()
+
+made_shots = Rookie[Rookie['SHOT_MADE_FLAG']==1]
+missed_shots = Rookie[Rookie['SHOT_MADE_FLAG']==0]
+fig,ax = plt.subplots()
+ax.scatter(missed_shots["LOC_X"].to_numpy(),(missed_shots["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3)
+ax.scatter(made_shots["LOC_X"].to_numpy(),(made_shots["LOC_Y"]+60).to_numpy(),facecolor='none',edgecolor='g',marker='o',linewidth=1,alpha=0.5)
+draw_court(ax,lw,color)
 
 
 
+# this requires +60 on the shots, 6 ft; shifts data to not be centered with hoop at 0; easier to draw court
+def draw_court(ax,lw,color):
+    ax.plot([-220,-220],[0,140],linewidth=lw, color=color) # left corner
+    ax.plot([220,220],[0,140], linewidth=lw, color=color) # right corner
+    ax.add_artist(mpl.patches.Arc((0,140), 440, 315, theta1=0,theta2 = 180, facecolor='none',edgecolor=color,lw=lw)) # 3pt
+    ax.plot([-80, -80], [0,190], linewidth=lw,color=color) #outer key left
+    ax.plot([80,80], [0,190], linewidth=lw,color=color) #outer key right
+    ax.plot([-60,-60], [0,190], linewidth=lw, color=color) # inner lane left
+    ax.plot([60,60], [0,190], linewidth=lw, color=color) # inner lane right
+    ax.plot([-80,80],[190,190],linewidth=lw,color=color) # top of key
+    ax.add_artist(mpl.patches.Circle((0,190), 60, facecolor='none',edgecolor=color, lw =2)) # ft circle
+    ax.add_artist(mpl.patches.Circle((0,60), 15, facecolor='none',edgecolor=color, lw =2)) # hoop
+    ax.plot([-30,30], [40,40], linewidth=lw, color=color) # back board
+    ax.set_xlim(-250,250)
+    ax.set_ylim(0,470) # excludes heaves anyways 
+    ax.set_xticks([])
+    ax.set_yticks([])
 
 
+# Psuedocode for next steps 
+# have the Embiid shoot in a dictionary of DFs
+# have way to isolate the seasons
+# have way to draw the court 
+# have way to select the made and missed shots 
+# function made/missed 
 
+# 1. PlayerSeason = usable index of all seasons in career
+# 2. PlayerSC = Dictionary of shot data frames 
+# 3. Pass PlayerSeason into PlayerSC to isolate data; also made/miss
+# 4. plot made/miss for season update legend (want some evolution/event handling)
+# 5. draw court
 
-
-
-
-
-
-
-
-
-
+# function made/missed / plot 
 
 
 
