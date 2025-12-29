@@ -276,8 +276,15 @@ from nba_api.stats.static import teams # needed for team lookup
 nba_teams = teams.get_teams() # needed for team lookup 
 
 # Plot Settings
-color = 'k' # court line color
+color = 'w' # court line color
 lw=2 # court linewidth
+nrow = 5 
+ncol = 5 
+plt.style.use('dark_background')
+
+
+# Variables
+PlayerName = "Tyrese Maxey"
 
 # Shot Chart Lookup Settings 
 # reserved for future use
@@ -323,21 +330,24 @@ def get_player_shotchart(SeasonsPlayed)->dict:
         misses[Season] = df[df['SHOT_MADE_FLAG']==0]
     return(PlayerSC, makes, misses)
 
-def Plot_player_shotchart(SeasonsPlayed):
+def Plot_player_shotchart(PlayerName:str,SeasonsPlayed,nrow:int,ncol:int):
     plt.close('all')
     fig = plt.figure()
+    fig.suptitle(PlayerName)
     PlayerSeason = SeasonsPlayed
     for idxtest, Season in enumerate(PlayerSeason,start=1): 
-        ax = fig.add_subplot(5,5,idxtest)
+        ax = fig.add_subplot(nrow,ncol,idxtest)
         ax.plot(misses[Season]["LOC_X"].to_numpy(),(misses[Season]["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
         ax.plot(makes[Season]["LOC_X"].to_numpy(),(makes[Season]["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
         draw_court(ax,lw,color)
         ax.set_title(Season)
         fig.tight_layout()
+    # Shot Plot Note +60 is a coordinate correction for the half court / coordinates
+
 
 # ID Lookup 
-PlayerPID = nba_player_lookup("Shai Gilgeous-Alexander")['id'] # keep ID only which is all needed
-#SixerTID = nba_team_lookup("Philadelphia 76ers")['id']
+PlayerPID = nba_player_lookup(PlayerName)['id'] # keep ID only which is all needed
+SixerTID = nba_team_lookup("Philadelphia 76ers")['id']
 
 # Determine Player Seasons (Index)
 PlayerCareer = playercareerstats.PlayerCareerStats(PlayerPID)
@@ -346,10 +356,9 @@ PlayerSeason = PlayerDataframe['SEASON_ID'] # index
 
 # Function Calls 
 PlayerSC, makes, misses = get_player_shotchart(PlayerSeason)
-Plot_player_shotchart(PlayerSeason)
+Plot_player_shotchart(PlayerName,PlayerSeason,nrow,ncol)
 
 
-# Shot Plot Note +60 is a coordinate correction for the half court 
 
 
 
