@@ -275,16 +275,18 @@ nba_players = players.get_players() # needed for player lookup
 from nba_api.stats.static import teams # needed for team lookup
 nba_teams = teams.get_teams() # needed for team lookup 
 
+
+
+
+
 # Plot Settings
 color = 'w' # court line color
 lw=2 # court linewidth
-nrow = 5 
-ncol = 5 
+ncol = 4
 plt.style.use('dark_background')
 
-
 # Variables
-PlayerName = "Tyrese Maxey"
+PlayerName = "James Harden"
 
 # Shot Chart Lookup Settings 
 # reserved for future use
@@ -330,18 +332,24 @@ def get_player_shotchart(SeasonsPlayed)->dict:
         misses[Season] = df[df['SHOT_MADE_FLAG']==0]
     return(PlayerSC, makes, misses)
 
-def Plot_player_shotchart(PlayerName:str,SeasonsPlayed,nrow:int,ncol:int):
+def Plot_player_shotchart(PlayerName:str,SeasonsPlayed,ncol:int):
     plt.close('all')
     fig = plt.figure()
     fig.suptitle(PlayerName)
+    fig.tight_layout()
     PlayerSeason = SeasonsPlayed
+    
+    quotient, remainder = divmod(len(PlayerSeason),ncol)
+    nrow =  quotient
+    if remainder:
+        nrow = quotient + 1
+    
     for idxtest, Season in enumerate(PlayerSeason,start=1): 
         ax = fig.add_subplot(nrow,ncol,idxtest)
-        ax.plot(misses[Season]["LOC_X"].to_numpy(),(misses[Season]["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
-        ax.plot(makes[Season]["LOC_X"].to_numpy(),(makes[Season]["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
+        ax.plot(misses[Season]["LOC_X"].to_numpy(),(misses[Season]["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.6,ls="")
+        ax.plot(makes[Season]["LOC_X"].to_numpy(),(makes[Season]["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.6,ls="")
         draw_court(ax,lw,color)
         ax.set_title(Season)
-        fig.tight_layout()
     # Shot Plot Note +60 is a coordinate correction for the half court / coordinates
 
 
@@ -356,8 +364,21 @@ PlayerSeason = PlayerDataframe['SEASON_ID'] # index
 
 # Function Calls 
 PlayerSC, makes, misses = get_player_shotchart(PlayerSeason)
-Plot_player_shotchart(PlayerName,PlayerSeason,nrow,ncol)
+Plot_player_shotchart(PlayerName,PlayerSeason,ncol)
 
+#%% figuring out subplot indexing
+
+# # https://stackoverflow.com/questions/24828771/automate-the-populating-of-subplots
+
+# col = 4 
+# nseason = 2
+# quotient, remainder = divmod(nseason,col)
+# rows = quotient
+# print(rows)
+# if remainder: 
+#     rows = rows+1
+# print("new:"+str(rows))
+  
 
 
 
