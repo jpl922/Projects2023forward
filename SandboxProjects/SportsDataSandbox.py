@@ -211,6 +211,8 @@ import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle, Arc
+%matplotlib qt
+
 
 # API imports
 from nba_api.stats.endpoints import playercareerstats
@@ -281,12 +283,44 @@ Rookie = EmbiidSC[EmbiidSeason[0]]
 made_shots = Rookie[Rookie['SHOT_MADE_FLAG']==1]
 missed_shots = Rookie[Rookie['SHOT_MADE_FLAG']==0]
 
+makes={}
+misses={}
+for Season in EmbiidSeason: # combine loops and improve efficiency ; broken out here uses
+    df = EmbiidSC[Season] # EmbiidSeason[0] is equivalent to Season 
+    madedata=df[df['SHOT_MADE_FLAG']==1]
+    misseddata=df[df['SHOT_MADE_FLAG']==0]
+    makes[Season] = madedata
+    misses[Season] = misseddata
+
+# Plotting need to figure out indexing for subplots and programmatic definition 
+plt.close('all')
+fig,axs = plt.subplots(2,5,squeeze=False) # issue with the plotting subplots
+#https://stackoverflow.com/questions/66605002/struggling-with-matplotlib-subplots-in-a-for-loop
+idx = 0
+idxrow = 0
+for Season in EmbiidSeason:
+    if idx == 5: # needed to fix axes matlab actually way better with indexing 
+        idx = 0
+        idxrow = 1
+    axs[idxrow,idx].plot(misses[Season]["LOC_X"].to_numpy(),(misses[Season]["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
+    axs[idxrow,idx].plot(makes[Season]["LOC_X"].to_numpy(),(makes[Season]["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
+    draw_court(axs[idxrow,idx],lw,color)
+    #axs[idx].legend(['Missed','Made'])
+    axs[idxrow,idx].set_title(Season)
+    idx += 1
+    print(idx)
+    print("idxrow:"+str(idxrow))
+fig.tight_layout()
+# shot types plotting?
+    
+    
 # Shot Plot Note +60 is a coordinate correction for the half court 
-fig,ax = plt.subplots() # programmatically setup chart plotting
-ax.scatter(missed_shots["LOC_X"].to_numpy(),(missed_shots["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3)
-ax.scatter(made_shots["LOC_X"].to_numpy(),(made_shots["LOC_Y"]+60).to_numpy(),facecolor='none',edgecolor='g',marker='o',linewidth=1,alpha=0.5)
-draw_court(ax,lw,color)
-ax.legend(['MIssed','Made'])
+
+fig,axs = plt.subplots(5,2) # programmatically setup chart plotting
+axs[0].plot(missed_shots["LOC_X"].to_numpy(),(missed_shots["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
+axs[0].plot(made_shots["LOC_X"].to_numpy(),(made_shots["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
+draw_court(axs[0],lw,color)
+axs[0].legend(['MIssed','Made'])
 
 
 # event handling to select data for showing evolution 
