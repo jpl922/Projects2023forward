@@ -204,6 +204,60 @@ def draw_court(ax,lw,color):
 # function made/missed / plot 
 
 
+# no longer needed code 
+# # Collect Player Shot Charts
+# PlayerSC = {}
+# for Season in PlayerSeason:
+#     data = shotchartdetail.ShotChartDetail(team_id=0, player_id=PlayerPID,context_measure_simple='FGA',season_nullable=Season,season_type_all_star=['Regular Season']).get_data_frames()[0]
+#     df = pd.DataFrame(data)
+#     PlayerSC[Season]= df
+# makes={}
+# misses={}
+# for Season in PlayerSeason: # combine loops and improve efficiency ; broken out here uses
+#     df = PlayerSC[Season] # EmbiidSeason[0] is equivalent to Season 
+#     madedata=df[df['SHOT_MADE_FLAG']==1]
+#     misseddata=df[df['SHOT_MADE_FLAG']==0]
+#     makes[Season] = madedata
+#     misses[Season] = misseddata
+
+# plotting before figuring out adding subplot and enumerate 
+# fig,axs = plt.subplots(2,5,squeeze=False) # issue with the plotting subplots
+# #https://stackoverflow.com/questions/66605002/struggling-with-matplotlib-subplots-in-a-for-loop
+# idx = 0
+# idxrow = 0
+# for Season in PlayerSeason:
+#     if idx == 5: # needed to fix axes matlab actually way better with indexing 
+#         idx = 0
+#         idxrow = 1
+#     axs[idxrow,idx].plot(misses[Season]["LOC_X"].to_numpy(),(misses[Season]["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
+#     axs[idxrow,idx].plot(makes[Season]["LOC_X"].to_numpy(),(makes[Season]["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
+#     draw_court(axs[idxrow,idx],lw,color)
+#     #axs[idx].legend(['Missed','Made'])
+#     axs[idxrow,idx].set_title(Season)
+#     idx += 1
+#     print(idx)
+#     print("idxrow:"+str(idxrow))
+# fig.tight_layout()
+# # shot types plotting?
+
+
+# plotting stucture for function 
+# # Plotting need to figure out indexing for subplots and programmatic definition 
+# plt.close('all')
+# # https://stackoverflow.com/questions/28070906/loop-over-2d-subplot-as-if-its-a-1-d
+# fig = plt.figure()
+# for idxtest, Season in enumerate(PlayerSeason,start=1): 
+#     ax = fig.add_subplot(5,5,idxtest)
+#     ax.plot(misses[Season]["LOC_X"].to_numpy(),(misses[Season]["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
+#     ax.plot(makes[Season]["LOC_X"].to_numpy(),(makes[Season]["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
+#     draw_court(ax,lw,color)
+#     #axs[idx].legend(['Missed','Made'])
+#     ax.set_title(Season)
+#     fig.tight_layout()
+ 
+
+
+
 #%% Shot Chart clean
 # general imports
 import numpy as np 
@@ -211,8 +265,7 @@ import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle, Arc
-%matplotlib qt
-
+#%matplotlib qt # run current line to get around syntax error 
 
 # API imports
 from nba_api.stats.endpoints import playercareerstats
@@ -222,25 +275,22 @@ nba_players = players.get_players() # needed for player lookup
 from nba_api.stats.static import teams # needed for team lookup
 nba_teams = teams.get_teams() # needed for team lookup 
 
-# Settings and Parameters
+# Plot Settings
 color = 'k' # court line color
 lw=2 # court linewidth
 
-
+# Shot Chart Lookup Settings 
+# reserved for future use
 
 # Functions 
 def nba_team_lookup(teamname: str)-> dict: 
  # Returns dictionary containing the Player ID of a player 
     NBATID = [team for team in nba_teams if team["full_name"] == teamname][0]
     return NBATID
-#SixerTID = nba_team_lookup("Philadelphia 76ers")['id']
-
-
 def nba_player_lookup(fullname: str)->dict:
     # Returns dictionary containingt he Team ID of a team 
    NBAPID = [player for player in nba_players if player["full_name"]==fullname][0]
    return NBAPID
-
 def draw_court(ax,lw,color):
     # draws court based on the NBA LOC shot chart details 
     ax.plot([-220,-220],[0,140],linewidth=lw, color=color) # left corner
@@ -258,73 +308,48 @@ def draw_court(ax,lw,color):
     ax.set_ylim(0,470) # excludes heaves anyways 
     ax.set_xticks([])
     ax.set_yticks([])
+def get_player_shotchart(SeasonsPlayed)->dict:
+    # input is list of nba seasons for player PlayerSeason; output dataframes and make/miss
+    #pre-allocation
+    PlayerSC={}
+    makes={}
+    misses={}
+    # for loop 
+    for Season in SeasonsPlayed:
+        data = shotchartdetail.ShotChartDetail(team_id=0, player_id=PlayerPID,context_measure_simple='FGA',season_nullable=Season,season_type_all_star=['Regular Season']).get_data_frames()[0]
+        df = pd.DataFrame(data)
+        PlayerSC[Season]=df
+        makes[Season] = df[df['SHOT_MADE_FLAG']==1]
+        misses[Season] = df[df['SHOT_MADE_FLAG']==0]
+    return(PlayerSC, makes, misses)
 
+def Plot_player_shotchart(SeasonsPlayed):
+    plt.close('all')
+    fig = plt.figure()
+    PlayerSeason = SeasonsPlayed
+    for idxtest, Season in enumerate(PlayerSeason,start=1): 
+        ax = fig.add_subplot(5,5,idxtest)
+        ax.plot(misses[Season]["LOC_X"].to_numpy(),(misses[Season]["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
+        ax.plot(makes[Season]["LOC_X"].to_numpy(),(makes[Season]["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
+        draw_court(ax,lw,color)
+        ax.set_title(Season)
+        fig.tight_layout()
 
-
-
-
-EmbiidPID = nba_player_lookup("Joel Embiid")['id'] # keep ID only which is all needed
+# ID Lookup 
+PlayerPID = nba_player_lookup("Shai Gilgeous-Alexander")['id'] # keep ID only which is all needed
+#SixerTID = nba_team_lookup("Philadelphia 76ers")['id']
 
 # Determine Player Seasons (Index)
-EmbiidCareer = playercareerstats.PlayerCareerStats(EmbiidPID)
-EmbiidDataframe = EmbiidCareer.season_totals_regular_season.get_data_frame()
-EmbiidSeason = EmbiidDataframe['SEASON_ID'] # index 
+PlayerCareer = playercareerstats.PlayerCareerStats(PlayerPID)
+PlayerDataframe = PlayerCareer.season_totals_regular_season.get_data_frame()
+PlayerSeason = PlayerDataframe['SEASON_ID'] # index 
 
-# Collect Player Shot Charts
-EmbiidSC = {}
-for Season in EmbiidSeason:
-    data = shotchartdetail.ShotChartDetail(team_id=0, player_id=EmbiidPID,context_measure_simple='FGA',season_nullable=Season,season_type_all_star=['Regular Season']).get_data_frames()[0]
-    df = pd.DataFrame(data)
-    EmbiidSC[Season]= df
+# Function Calls 
+PlayerSC, makes, misses = get_player_shotchart(PlayerSeason)
+Plot_player_shotchart(PlayerSeason)
 
-Rookie = EmbiidSC[EmbiidSeason[0]]
 
-# Made/Miss
-made_shots = Rookie[Rookie['SHOT_MADE_FLAG']==1]
-missed_shots = Rookie[Rookie['SHOT_MADE_FLAG']==0]
-
-makes={}
-misses={}
-for Season in EmbiidSeason: # combine loops and improve efficiency ; broken out here uses
-    df = EmbiidSC[Season] # EmbiidSeason[0] is equivalent to Season 
-    madedata=df[df['SHOT_MADE_FLAG']==1]
-    misseddata=df[df['SHOT_MADE_FLAG']==0]
-    makes[Season] = madedata
-    misses[Season] = misseddata
-
-# Plotting need to figure out indexing for subplots and programmatic definition 
-plt.close('all')
-fig,axs = plt.subplots(2,5,squeeze=False) # issue with the plotting subplots
-#https://stackoverflow.com/questions/66605002/struggling-with-matplotlib-subplots-in-a-for-loop
-idx = 0
-idxrow = 0
-for Season in EmbiidSeason:
-    if idx == 5: # needed to fix axes matlab actually way better with indexing 
-        idx = 0
-        idxrow = 1
-    axs[idxrow,idx].plot(misses[Season]["LOC_X"].to_numpy(),(misses[Season]["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
-    axs[idxrow,idx].plot(makes[Season]["LOC_X"].to_numpy(),(makes[Season]["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
-    draw_court(axs[idxrow,idx],lw,color)
-    #axs[idx].legend(['Missed','Made'])
-    axs[idxrow,idx].set_title(Season)
-    idx += 1
-    print(idx)
-    print("idxrow:"+str(idxrow))
-fig.tight_layout()
-# shot types plotting?
-    
-    
 # Shot Plot Note +60 is a coordinate correction for the half court 
-
-fig,axs = plt.subplots(5,2) # programmatically setup chart plotting
-axs[0].plot(missed_shots["LOC_X"].to_numpy(),(missed_shots["LOC_Y"]+60).to_numpy(),color='r',marker='x',linewidth=1,alpha=0.3,ls="")
-axs[0].plot(made_shots["LOC_X"].to_numpy(),(made_shots["LOC_Y"]+60).to_numpy(),color='g',marker='o',fillstyle = 'none',linewidth=1,alpha=0.5,ls="")
-draw_court(axs[0],lw,color)
-axs[0].legend(['MIssed','Made'])
-
-
-# event handling to select data for showing evolution 
-
 
 
 
