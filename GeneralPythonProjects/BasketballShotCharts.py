@@ -27,9 +27,6 @@ from nba_api.stats.static import teams # needed for team lookup
 nba_teams = teams.get_teams() # needed for team lookup 
 
 
-
-
-
 # Plot Settings
 color = 'w' # court line color
 lw=2 # court linewidth
