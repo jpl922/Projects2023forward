@@ -1,6 +1,0 @@
-conda activate tf (tensor flow), keras; spyder might not be installed  conda deactivate 
-pytorch installed 
-
-
-Monte carlo blackjack 
-
