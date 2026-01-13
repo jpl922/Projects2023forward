@@ -48,6 +48,26 @@ class Queue: # wrapper on deque can just deque directly
     def get(self)->T:
         return self.elements.popleft()
     
+# def breadth_first_search(graph: Graph, start: Location):
+#     # print what we find
+#     frontier = Queue()
+#     frontier.put(start)
+#     reached: set[Location]-set()
+#     reached.add(start)
+    
+#     while not frontier.empty():
+#         current: Location = frontier.get()
+#         for next in graph.neighbors(current):
+#             if next not in reached:
+#                 frontier.put(next)
+#                 reached.add(next)
+
+
+# print('Reachable from A:')
+# breadth_first_search(example_graph,'A')
+# print('Reachable from E:')
+# breadth_first_search(example_graph,'E')
+
 def breadth_first_search(graph: Graph, start: Location):
     # print what we find
     frontier = Queue()
@@ -86,7 +106,7 @@ class SquareGrid:
     
     def neighbors(self, id: GridLocation)->Iterator[GridLocation]:
         (x,y)=id
-        neighbors = [(x+1, y), (x-1, y), (x,y-1), (x+y+1)] # E W N S
+        neighbors = [(x+1, y), (x-1, y), (x,y-1), (x, y+1)] # E W N S
         # "Ugly Paths" section explains on site:
         if (x+y)% 2 == 0: neighbors.reverse() # S N W E 
         results = filter(self.in_bounds, neighbors)
@@ -128,9 +148,11 @@ DIAGRAM1_WALLS = [from_id_width(id, width=30) for id in [21,22,51,52,81,82,93,94
 
 g = SquareGrid(30,15)
 g.walls = DIAGRAM1_WALLS # coords of walls 
+draw_grid(g)
+
 
 start = (8, 7)
-parents = breadth_first_search(g, start)
+parents = breadth_first_search(g,start)
 draw_grid(g, point_to=parents, start=start)
 ## NEED DEBUG 
 
