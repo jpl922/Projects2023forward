@@ -68,7 +68,23 @@ class Queue: # wrapper on deque can just deque directly
 # print('Reachable from E:')
 # breadth_first_search(example_graph,'E')
 
-def breadth_first_search(graph: Graph, start: Location):
+# def breadth_first_search(graph: Graph, start: Location):
+#     # print what we find
+#     frontier = Queue()
+#     frontier.put(start)
+#     came_from: dict[Location, Optional[Location]] = {}
+#     came_from[start] = None
+    
+#     while not frontier.empty():
+#         current: Location = frontier.get()
+#         for next in graph.neighbors(current):
+#             if next not in came_from:
+#                 frontier.put(next)
+#                 came_from[next] = current
+#     return came_from
+
+# early exit variation 
+def breadth_first_search(graph: Graph, start: Location, goal: Location):
     # print what we find
     frontier = Queue()
     frontier.put(start)
@@ -77,16 +93,22 @@ def breadth_first_search(graph: Graph, start: Location):
     
     while not frontier.empty():
         current: Location = frontier.get()
+        
+        # early exit variation 
+        if current == goal: 
+            break 
+        
         for next in graph.neighbors(current):
             if next not in came_from:
                 frontier.put(next)
                 came_from[next] = current
     return came_from
 
-print('Reachable from A:')
-breadth_first_search(example_graph,'A')
-print('Reachable from E:')
-breadth_first_search(example_graph,'E')
+# reachable example 
+# print('Reachable from A:')
+# breadth_first_search(example_graph,'A')
+# print('Reachable from E:')
+# breadth_first_search(example_graph,'E')
      
 
 GridLocation = Tuple[int, int]
@@ -148,15 +170,115 @@ DIAGRAM1_WALLS = [from_id_width(id, width=30) for id in [21,22,51,52,81,82,93,94
 
 g = SquareGrid(30,15)
 g.walls = DIAGRAM1_WALLS # coords of walls 
-draw_grid(g)
+# draw_grid(g)
 
 
-start = (8, 7)
-parents = breadth_first_search(g,start)
-draw_grid(g, point_to=parents, start=start)
-## NEED DEBUG 
+# start = (8, 7)
+# parents = breadth_first_search(g,start)
+# draw_grid(g, point_to=parents, start=start)
+
+# early exit 
+start = (8,7) 
+goal = (17,2) 
+parents = breadth_first_search(g, start, goal) 
+draw_grid(g, point_to=parents, start=start, goal=goal)
 
 
+# 1.3 Dijkstra's algorithm
+# evaluates cost (weight) of movements 
+
+# how is this working 
+class WeightedGraph(Graph): # type?
+    def cost(self, from_id: Location, to_id: Location)-> float: pass
+
+class GridWithWeights(SquareGrid):
+    def __init__(self, width: int, height: int):
+        super().__init__(width, height) # super allows other classes to use more easily 
+        self.weights: dict[GridLocation, float] = {}
+        
+    def cost(self, from_node: GridLocation, to_node: GridLocation)-> float:
+        return self.weights.get(to_node, 1) 
+    
+
+import heapq
+
+class PriorityQueue: # review this section and heapq 
+    def __init__(self):
+        self.elements: list[tuple[float, T]] = []
+        
+    def empty(self)->bool:
+        return not self.elements
+    
+    def put(self, item: T, priority: float):
+        heapq.heappush(self.elements, (priority, item))
+        
+    def get(self) -> T: 
+        return heapq.heappop(self.elements)[1]
+    
+# above is a wrapper, but python has queue.PriorityQueue built in 
+
+
+def dijkstra_search(graph: WeightedGraph, start: Location, goal: Location):
+    frontier = PriorityQueue()
+    frontier.put(start, 0) # start/0 pushed to heapq.heappush
+    came_from: dict[Location, Optional[Location]] = {}
+    cost_so_far: dict[Location, float] = {}
+    came_from[start] = None
+    cost_so_far[start] = 0
+    
+    while not frontier.empty():
+        current: Location = frontier.get() # heapq.heappop
+        
+        if current == goal:  # early exit 
+            break 
+        
+        for next in graph.neighbors(current): 
+            new_cost = cost_so_far[current] + graph.cost(current, next)
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next]=new_cost
+                priority = new_cost
+                frontier.put(next, priority)
+                came_from[next] = current 
+    return came_from, cost_so_far
+
+
+def reconstruct_path(came_from: dict[Location, Location], start: Location, goal: Location)-> list[Location]:
+    current: Location = goal
+    path: list[Location]= []
+    if goal not in came_from: # no path found
+        return []
+    while current != start: 
+        path.append(current)
+        current = came_from[current]
+    path.append(start) # optional
+    path.reverse() # optional 
+    # sometimes more useful to store backwards or add start node
+    return path
+
+diagram4 = GridWithWeights(10,10)
+diagram4.walls = [(1, 7), (1, 8), (2, 7), (2, 8), (3, 7), (3, 8)]
+diagram4.weights = {loc: 5 for loc in [(3, 4), (3, 5), (4, 1), (4, 2),
+                                       (4, 3), (4, 4), (4, 5), (4, 6),
+                                       (4, 7), (4, 8), (5, 1), (5, 2),
+                                       (5, 3), (5, 4), (5, 5), (5, 6),
+                                       (5, 7), (5, 8), (6, 2), (6, 3),
+                                       (6, 4), (6, 5), (6, 6), (6, 7),
+                                       (7, 3), (7, 4), (7, 5)]}
+
+start, goal = (1,4), (8,3) 
+came_from, cost_so_far = dijkstra_search(diagram4, start, goal)
+draw_grid(diagram4, point_to=came_from, start=start, goal=goal)
+print()
+draw_grid(diagram4, path=reconstruct_path(came_from, start=start, goal=goal))
+# copy into sublime text to see bigger
+# the @ is the chosen path 
+# shown example has a forest in the middle which you avoid with the path
+
+# 1.3.4 no path 
+
+
+
+    
 
     
 
