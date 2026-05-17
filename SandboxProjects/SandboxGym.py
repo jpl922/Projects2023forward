@@ -73,17 +73,17 @@ import gymnasium as gym
 import numpy as np 
 
 # something missing or miscoded here the errors aren't lining up something to do with learning or initiation; pureloy random whole time 
-
+# indents messed up 
 
 
 class BlackjackAgent:
-    def __init__(self, env: gym.Env,
-                 learning_rate: float,
-                 initial_epsilon: float,
-                 epsilon_decay: float,
-                 final_epsilon: float,
-                 discount_factor: float = 0.95,
-                 ):
+    def __init__(
+        self, env: gym.Env,
+        learning_rate: float,
+        initial_epsilon: float,
+        epsilon_decay: float,
+        final_epsilon: float,
+        discount_factor: float = 0.95):
         """Initialize a Q-Learning agent.
 
 Args:
@@ -161,8 +161,7 @@ This is the heart of Q-learning: learn from (state, action, reward, next_state)
             # self.q_values[a][b] is indexing into the table to access value
     def decay_epsilon(self):
          """Reduce exploration rate after each episode."""
-         self.epsilon = max(self.final_epsilon,
-                              self.epsilon-self.epsilon_decay)
+         self.epsilon = max(self.final_epsilon, self.epsilon - self.epsilon_decay)
 
 
 
@@ -177,7 +176,6 @@ final_epsilon = 0.1 # always keep same exploration
 
 # create env and agent 
 env = gym.make("Blackjack-v1", sab=False)
-env = gym.wrappers.RecordEpisodeStatistics(env, buffer_length=n_episodes)
 
 agent = BlackjackAgent(
     env=env,
@@ -185,6 +183,7 @@ agent = BlackjackAgent(
     initial_epsilon = start_epsilon, 
     epsilon_decay = epsilon_decay,
     final_epsilon= final_epsilon)
+env = gym.wrappers.RecordEpisodeStatistics(env, buffer_length=n_episodes)
 
 from tqdm import tqdm # progress bar (nice)
 
@@ -209,7 +208,7 @@ for episode in tqdm(range(n_episodes)):
         obs = next_obs
         
         # reduce exploration rate 
-        agent.decay_epsilon 
+    agent.decay_epsilon 
         
 
 # analyzing training results 
